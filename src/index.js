@@ -298,6 +298,10 @@ module.exports = function (connect) {
                 .then(() => this.emit('destroy', sid))
               , callback)
     }
+    
+    all(callback) {
+      return null;                          
+    }
 
     length(callback) {
       return withCallback(this.collectionReady()

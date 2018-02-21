@@ -185,6 +185,17 @@ module.exports = function (connect) {
       return sessionId
     }
 
+    getSession(session) {
+	  if (session) {
+		const s = this.transformFunctions.unserialize(session.session)
+		if (this.options.touchAfter > 0 && session.lastModified) {
+		  s.lastModified = session.lastModified
+		}
+		this.emit('get', sid)
+		return s
+	  }
+    }
+
         /* Public API */
 
     get(sid, callback) {
@@ -196,17 +207,20 @@ module.exports = function (connect) {
                         {expires: {$gt: new Date()}}
                 ]
               }))
-                .then(session => {
-                  if (session) {
-                    const s = this.transformFunctions.unserialize(session.session)
-                    if (this.options.touchAfter > 0 && session.lastModified) {
-                      s.lastModified = session.lastModified
-                    }
-                    this.emit('get', sid)
-                    return s
-                  }
-                })
-              , callback)
+              .then(this.getSession.bind(this))
+            , callback)
+    }
+
+    all(callback) {
+      return withCallback(this.collectionReady()
+		      .then(collection => collection.find({
+			    $or: [
+				        {expires: {$exists: false}},
+				        {expires: {$gt: new Date()}}
+			    ]
+		      }).toArray())
+		      .then(sessions => seesions.map(this.getSession.bind(this)))
+            , callback)
     }
 
     set(sid, session, callback) {

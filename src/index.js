@@ -191,7 +191,7 @@ module.exports = function (connect) {
 		if (this.options.touchAfter > 0 && session.lastModified) {
 		  s.lastModified = session.lastModified
 		}
-		this.emit('get', sid)
+		this.emit('get', session._id)
 		return s
 	  }
     }
@@ -207,7 +207,7 @@ module.exports = function (connect) {
                         {expires: {$gt: new Date()}}
                 ]
               }))
-              .then(this.getSession.bind(this))
+              .then(session => this.getSession(session))
             , callback)
     }
 
@@ -219,7 +219,7 @@ module.exports = function (connect) {
 				        {expires: {$gt: new Date()}}
 			    ]
 		      }).toArray())
-		      .then(sessions => seesions.map(this.getSession.bind(this)))
+		      .then(sessions => seesions.map(session => this.getSession))
             , callback)
     }
 
